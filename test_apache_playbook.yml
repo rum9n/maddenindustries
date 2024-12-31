@@ -1,0 +1,14 @@
+---
+- name: Test Apache Installation
+  hosts: all
+  become: no
+  tasks:
+    - name: Check if Apache is running
+      service_facts:
+
+    - name: Ensure Apache is running
+      assert:
+        that:
+          - "'httpd' in ansible_facts.services"
+        fail_msg: "Apache is not running"
+        success_msg: "Apache is running"

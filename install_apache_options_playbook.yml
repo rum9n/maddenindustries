@@ -1,0 +1,23 @@
+---
+- name: Install Apache with options
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure Apache is installed
+      package:
+        name: httpd
+        state: present
+
+    - name: Enable Apache to start on boot
+      service:
+        name: httpd
+        enabled: yes
+        state: started
+
+    - name: Install optional Apache modules
+      package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - mod_ssl
+        - mod_rewrite
