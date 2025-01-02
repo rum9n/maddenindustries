@@ -1,25 +1,34 @@
 ---
-- name: Install Apache with options
+- name: Install and configure Apache with custom options
   hosts: all
   become: yes
-  vars_files:
-    - secrets.yml
+
   tasks:
-    - name: Ensure Apache is installed
-      package:
+    - name: Install Apache
+      ansible.builtin.yum:
         name: httpd
         state: present
 
-    - name: Enable Apache to start on boot
-      service:
-        name: httpd
-        enabled: yes
-        state: started
-
-    - name: Install optional Apache modules
-      package:
-        name: "{{ item }}"
+    - name: Configure Apache to listen on port 8081
+      ansible.builtin.lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen '
+        line: 'Listen 8081'
         state: present
-      loop:
-        - mod_ssl
-        - mod_rewrite
+
+    - name: Allow port 8081 in the firewall
+      ansible.builtin.firewalld:
+        port: 8081/tcp
+        permanent: yes
+        state: enabled
+
+    - name: Reload firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: reloaded
+
+    - name: Restart Apache
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
+
